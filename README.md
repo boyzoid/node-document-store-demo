@@ -7,4 +7,5 @@ The only thing you will need to run this demo is a local instance of MySQL runni
 After cloning the repo, run the follwoing commands
 
 ```npm install```
+
 ```node src```
