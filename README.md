@@ -2,10 +2,9 @@
 A demo for using Node.js to access a MySQL Document Store
 
 ## Setup
-The only thing you will need to run this demo is a local instance of MySQL running with the root account able to login from localhost without a password.
 
-After cloning the repo, run the follwoing commands
+This setup assumes you already have Node.js installed and have access to a MySQL database.
 
-```npm install```
-
-```node src```
+* Copy the .env_template file to .env and fill in the values for the port the app will use and the database information.
+* Run `npm install` in the root directory.
+* Run `node src` in the root directory.'

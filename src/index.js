@@ -3,6 +3,7 @@
 // importing the dependencies
 const express = require('express')
 const bodyParser = require('body-parser')
+require('dotenv').config();
 
 // defining the Express app
 const app = express()
@@ -20,7 +21,7 @@ const databaseName = 'node-demo'
 const collectionName = 'scores'
 
 // Connection URL
-const url = `mysqlx://root@localhost:33060/`
+const url = `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/`
 const defaultResultLength = 50
 
 const initDatabase = async () =>{
@@ -64,7 +65,7 @@ const getBestScores = async ( limit ) =>{
     const session = await getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find().fields(['firstName', 'lastName', 'score', 'date', 'course.name', 'course.holeGroup']).sort(['score asc', 'date desc']).limit( limit ).execute(function (score) {
+    await collection.find().fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName']).sort(['score asc', 'date desc']).limit( limit ).execute(function (score) {
         scores.push(score)
     });
     session.close()
@@ -86,12 +87,48 @@ const getByGolfer = async ( lastName ) =>{
     const session = await getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("lower(lastName) like :lastName").bind('lastName', lastName.toLowerCase()+'%').execute(function (score) {
+    await collection.find("lower(lastName) like :lastName").bind('lastName', lastName.toLowerCase()+'%').sort(['lastName', 'firstName']).execute(function (score) {
         scores.push(score)
     });
     session.close()
     return scores
 }
+const getRoundsUnderPar = async () =>{
+    let scores = []
+    const session = await getSession()
+    const db = session.getSchema(databaseName)
+    const collection = db.getCollection(collectionName)
+    await collection.find("score < course.par").fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName']).execute(function (score) {
+        scores.push( score )
+    })
+    session.close()
+    return scores
+}
+
+const getAverageScorePerGolfer = async () =>{
+    let scores = []
+    const session = await getSession()
+    const db = session.getSchema(databaseName)
+    const collection = db.getCollection(collectionName)
+    await collection.find().fields(['lastName', 'firstName', 'avg(score) as avg', 'count(score) as numberOfRounds']).groupBy(['lastName', 'firstName']).execute(function (score) {
+        scores.push( score )
+    })
+    session.close()
+    return scores
+}
+
+const getAverageScorePerCourse= async () =>{
+    let scores = []
+    const session = await getSession()
+    const db = session.getSchema(databaseName)
+    const collection = db.getCollection(collectionName)
+    await collection.find().fields(['course.name as courseName', 'course.slope as slope', 'course.rating as rating', 'format(avg(score), 2) * 1 as avg', 'count(score) as numberOfRounds']).groupBy(['course.name']).sort('course.name').execute(function (score) {
+        scores.push( score )
+    })
+    session.close()
+    return scores
+}
+
 const getSession = async () =>{
     const session = await mysqlx.getSession(url)
     return session
@@ -143,8 +180,26 @@ app.get('/getByGolfer/:lastName?', async (req, res) =>{
     let msg = { count: scores.length, scores: scores }
     res.send( msg )
 })
+app.get('/getRoundsUnderPar', async (req, res) =>{
+    const scores = await getRoundsUnderPar();
+    let msg = { count: scores.length, scores: scores }
+    res.send( msg )
+    
+})
+app.get('/getAverageScorePerGolfer', async (req, res) =>{
+    const scores = await getAverageScorePerGolfer();
+    let msg = { count: scores.length, scores: scores }
+    res.send( msg )
+    
+})
+app.get('/getAverageScorePerCourse', async (req, res) =>{
+    const scores = await getAverageScorePerCourse();
+    let msg = { count: scores.length, scores: scores }
+    res.send( msg )
+    
+})
 
 // starting the server
-app.listen(3001, () => {
-    console.log('listening on port 3001');
+app.listen(process.env.PORT, () => {
+    console.log('listening on port ' + process.env.PORT)
 });
