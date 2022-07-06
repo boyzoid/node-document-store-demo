@@ -19,19 +19,27 @@ const mysqlx = require('@mysql/xdevapi')
 // Database/Schema Name
 const databaseName = 'node-demo'
 const collectionName = 'scores'
+const connectionUrl =  `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${databaseName}`
 
 // Connection URL
-const url = `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/`
+const pool = mysqlx.getClient(connectionUrl, {
+    pooling: {
+        enabled: true,
+        maxSize: 10,
+        maxIdleTime: 20000,
+        queueTimeout: 5000
+    }
+})
 const defaultResultLength = 50
 
 const initDatabase = async () =>{
     try {
         // Establish the server connection
-        const session = await getSession()
-        //Drop and recreate schema
-        session.dropSchema(databaseName)
-        session.createSchema(databaseName)
+        const session = await pool.getSession()
+        // get the schema
         const db = session.getSchema(databaseName)
+        // drop collection if it exists
+        db.dropCollection(collectionName)
         //create collection
         db.createCollection(collectionName)
         const collection = db.getCollection(collectionName)
@@ -39,6 +47,10 @@ const initDatabase = async () =>{
         const scores = getDemoData()
         //insert scores
         const result = await collection.add( scores ).execute()
+        // Add indexes
+        collection.createIndex("courseName", {fields: [{field: "$.course.name", type: "TEXT(100)"}]})
+        collection.createIndex("golferLastName", {fields: [{field: "$.lastName", type: "TEXT(100)"}]})
+        //close the session
         session.close()
         return result.getAffectedItemsCount()
 
@@ -49,12 +61,14 @@ const initDatabase = async () =>{
 }
 const listAllScores = async ( limit ) =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find().limit(limit).execute(function (score) {
-        scores.push(score)
-    });
+    await collection.find()
+        .limit(limit)
+        .execute((score) => {
+            scores.push(score)
+        });
 
     session.close()
     return scores
@@ -62,76 +76,125 @@ const listAllScores = async ( limit ) =>{
 }
 const getBestScores = async ( limit ) =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find().fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName']).sort(['score asc', 'date desc']).limit( limit ).execute(function (score) {
-        scores.push(score)
-    });
+    await collection.find()
+        .fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName'])
+        .sort(['score asc', 'date desc']).limit( limit )
+        .execute((score) => {
+            scores.push(score)
+        });
     session.close()
     return scores
 }
 const getByScore = async ( score ) =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("score = :score").bind( 'score', score).sort(['date desc']).execute(function (score) {
-        scores.push(score)
-    });
+    await collection.find("score = :score")
+        .bind( 'score', score)
+        .sort(['date desc'])
+        .execute((score) => {
+            scores.push(score)
+        });
     session.close()
     return scores
 }
 const getByGolfer = async ( lastName ) =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("lower(lastName) like :lastName").bind('lastName', lastName.toLowerCase()+'%').sort(['lastName', 'firstName']).execute(function (score) {
-        scores.push(score)
-    });
+    await collection.find("lower(lastName) like :lastName")
+        .bind('lastName', lastName.toLowerCase()+'%')
+        .sort(['lastName', 'firstName'])
+        .execute((score) => {
+            scores.push(score)
+        });
     session.close()
     return scores
 }
 const getRoundsUnderPar = async () =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("score < course.par").fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName']).execute(function (score) {
-        scores.push( score )
-    })
+    await collection.find("score < course.par")
+        .fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName'])
+        .execute((score) => {
+            scores.push( score )
+        })
     session.close()
     return scores
 }
 
 const getAverageScorePerGolfer = async () =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find().fields(['lastName', 'firstName', 'avg(score) as avg', 'count(score) as numberOfRounds']).groupBy(['lastName', 'firstName']).execute(function (score) {
-        scores.push( score )
-    })
+    await collection.find()
+        .fields(['lastName', 'firstName', 'avg(score) as avg', 'count(score) as numberOfRounds'])
+        .groupBy(['lastName', 'firstName'])
+        .execute((score) => {
+            scores.push( score )
+        })
     session.close()
     return scores
 }
 
-const getAverageScorePerCourse= async () =>{
+const getCourseScoringData= async () =>{
     let scores = []
-    const session = await getSession()
+    const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find().fields(['course.name as courseName', 'course.slope as slope', 'course.rating as rating', 'format(avg(score), 2) * 1 as avg', 'count(score) as numberOfRounds']).groupBy(['course.name']).sort('course.name').execute(function (score) {
-        scores.push( score )
-    })
+    await collection.find()
+        .fields(['course.name as courseName', 'course.slope as slope', 'course.rating as rating', 'format(avg(score), 2) * 1  as avg', 'min(score) * 1 as lowestScore', 'max(score) * 1 as highestScore',
+         'count(score) as numberOfRounds'])
+        .groupBy(['course.name'])
+        .sort('course.name')
+        .execute((score) => {
+            scores.push( score )
+        })
     session.close()
     return scores
 }
-
-const getSession = async () =>{
-    const session = await mysqlx.getSession(url)
-    return session
+const getDetailedScoreInfoPerCourse = async () =>{
+    let courses = []
+    const session = await pool.getSession()
+    const query = await session.sql(
+        "with rounds as (  " +
+        " select doc->> '$.course.name' as courseName,  " +
+        "        doc->> '$.score' * 1 as score  " +
+        " from scores ),  " +
+        " roundsAgg as (  " +
+        "  select courseName, min( score ) lowScore from rounds group by courseName  " +
+        "  ),  " +
+        " golfers as (  " +
+        "  select doc->> '$.firstName' as firstName,  " +
+        "         doc->> '$.lastName' as lastName,  " +
+        "         doc->> '$.score' * 1 as score,  " +
+        "         doc->> '$.course.name' as courseName,  " +
+        "         doc->> '$.date' as datePlayed  " +
+        "  from scores )  " +
+        "select  JSON_OBJECT('courseName', ra.courseName,  " +
+        "                    'score', ra.lowScore,  " +
+        "                    'golfers', (select CAST(CONCAT('[',  " +
+        "                                       GROUP_CONCAT(  " +
+        "                                           JSON_OBJECT('golfer', concat( g.firstName, ' ', g.lastName), 'datePlayed', g.datePlayed )),  " +
+        "                                       ']')  " +
+        "                               AS JSON) from golfers g where g.courseName = ra.courseName and g.score = ra.lowScore)  " +
+        "         )  " +
+        " from roundsAgg ra  " +
+        "group by ra.courseName  " +
+        "order by ra.courseName;")
+    await query.execute( (course) => {
+        courses.push(course)
+    })
+    session.close()
+    return courses
 }
 
 const getDemoData = () =>{
@@ -192,13 +255,17 @@ app.get('/getAverageScorePerGolfer', async (req, res) =>{
     res.send( msg )
     
 })
-app.get('/getAverageScorePerCourse', async (req, res) =>{
-    const scores = await getAverageScorePerCourse();
+app.get('/getCourseScoringData', async (req, res) =>{
+    const scores = await getCourseScoringData();
     let msg = { count: scores.length, scores: scores }
     res.send( msg )
-    
 })
 
+app.get('/getDetailedScoreInfoPerCourse', async (req, res) => {
+    const courses = await getDetailedScoreInfoPerCourse();
+    let msg = { count: courses.length, courses: courses }
+    res.send( msg )
+})
 // starting the server
 app.listen(process.env.PORT, () => {
     console.log('listening on port ' + process.env.PORT)
