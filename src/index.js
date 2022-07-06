@@ -165,30 +165,29 @@ const getDetailedScoreInfoPerCourse = async () =>{
     let courses = []
     const session = await pool.getSession()
     const query = await session.sql(
-        "with rounds as (  " +
-        " select doc->> '$.course.name' as courseName,  " +
-        "        doc->> '$.score' * 1 as score  " +
-        " from scores ),  " +
-        " roundsAgg as (  " +
-        "  select courseName, min( score ) lowScore from rounds group by courseName  " +
-        "  ),  " +
-        " golfers as (  " +
-        "  select doc->> '$.firstName' as firstName,  " +
-        "         doc->> '$.lastName' as lastName,  " +
-        "         doc->> '$.score' * 1 as score,  " +
-        "         doc->> '$.course.name' as courseName,  " +
-        "         doc->> '$.date' as datePlayed  " +
-        "  from scores )  " +
-        "select  JSON_OBJECT('courseName', ra.courseName,  " +
-        "                    'score', ra.lowScore,  " +
-        "                    'golfers', (select CAST(CONCAT('[',  " +
-        "                                       GROUP_CONCAT(  " +
-        "                                           JSON_OBJECT('golfer', concat( g.firstName, ' ', g.lastName), 'datePlayed', g.datePlayed )),  " +
-        "                                       ']')  " +
-        "                               AS JSON) from golfers g where g.courseName = ra.courseName and g.score = ra.lowScore)  " +
-        "         )  " +
-        " from roundsAgg ra  " +
-        "group by ra.courseName  " +
+        "with rounds as ( " +
+        "select doc->> '$.firstName' as firstName, " +
+        "       doc->> '$.lastName' as lastName, " +
+        "       doc->> '$.score' * 1 as score, " +
+        "       doc->> '$.course.name' as courseName, " +
+        "       doc->> '$.date' as datePlayed " +
+        "from scores ), " +
+        "roundsAgg as ( " +
+        "select courseName, min( score ) lowScore from rounds group by courseName " +
+        ") " +
+        "select  JSON_OBJECT('courseName', ra.courseName, " +
+        "                    'score', ra.lowScore, " +
+        "                    'golfers', ( " +
+        "                        select JSON_ARRAYAGG( " +
+        "                            JSON_OBJECT('golfer', concat(r.firstName, ' ', r.lastName), 'datePlayed', r.datePlayed) " +
+        "                        ) " +
+        "                        from rounds r " +
+        "                        where r.score = ra.lowScore " +
+        "                        and r.courseName = ra.courseName) " +
+        "        ) as data " +
+        " " +
+        "from roundsAgg ra " +
+        "group by ra.courseName " +
         "order by ra.courseName;")
     await query.execute( (course) => {
         courses.push(course)
