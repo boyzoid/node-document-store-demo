@@ -1,0 +1,365 @@
+{
+	"info": {
+		"_postman_id": "9f55938e-b88e-41a8-9ab3-3eb7e7dd4757",
+		"name": "Node Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5339685"
+	},
+	"item": [
+		{
+			"name": "API Root",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001"
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Limit 100",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Best Scores",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/bestScores",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"bestScores"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Best Scores Limit 10",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/bestScores/10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"bestScores",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Rounds Under Par",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getRoundsUnderPar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getRoundsUnderPar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Score",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getByScore/45",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getByScore",
+						"45"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Golfer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getByGolfer/stroz",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getByGolfer",
+						"stroz"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Golfer Average",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getAverageScorePerGolfer/2022",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getAverageScorePerGolfer",
+						"2022"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Course Data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getCourseScoringData",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getCourseScoringData"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Holes-In-One",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getHolesInOne",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getHolesInOne"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Aggregate Course Score",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getAggregateCourseScore",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getAggregateCourseScore"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Score",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"_id\": \"00006309ac490000000000000002\",\r\n    \"date\": \"2022-08-30\",\r\n    \"score\": 46,\r\n    \"course\": {\r\n        \"par\": 36,\r\n        \"city\": \"Charles Town\",\r\n        \"name\": \"Locust Hill Golf Course - Front Nine\",\r\n        \"state\": \"WV\"\r\n    },\r\n    \"lastName\": \"Dinglehoffer\",\r\n    \"firstName\": \"Skippy\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/score",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"score"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Add",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getByGolfer/dinglehoffer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getByGolfer",
+						"dinglehoffer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Score",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"_id\": \"00006309ac490000000000000002\",\r\n    \"holeScores\": [\r\n                {\r\n                    \"par\": 4,\r\n                    \"score\": 5,\r\n                    \"number\": 1,\r\n                    \"relationToPar\": 1\r\n                },\r\n                {\r\n                    \"par\": 5,\r\n                    \"score\": 6,\r\n                    \"number\": 2,\r\n                    \"relationToPar\": 1\r\n                },\r\n                {\r\n                    \"par\": 4,\r\n                    \"score\": 6,\r\n                    \"number\": 3,\r\n                    \"relationToPar\": 2\r\n                },\r\n                {\r\n                    \"par\": 4,\r\n                    \"score\": 5,\r\n                    \"number\": 4,\r\n                    \"relationToPar\": 1\r\n                },\r\n                {\r\n                    \"par\": 3,\r\n                    \"score\": 4,\r\n                    \"number\": 5,\r\n                    \"relationToPar\": 1\r\n                },\r\n                {\r\n                    \"par\": 4,\r\n                    \"score\": 6,\r\n                    \"number\": 6,\r\n                    \"relationToPar\": 2\r\n                },\r\n                {\r\n                    \"par\": 3,\r\n                    \"score\": 3,\r\n                    \"number\": 7,\r\n                    \"relationToPar\": 0\r\n                },\r\n                {\r\n                    \"par\": 5,\r\n                    \"score\": 7,\r\n                    \"number\": 8,\r\n                    \"relationToPar\": 2\r\n                },\r\n                {\r\n                    \"par\": 4,\r\n                    \"score\":4,\r\n                    \"number\": 9,\r\n                    \"relationToPar\": 0\r\n                }\r\n            ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/holeScores",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"holeScores"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Update",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getByGolfer/dinglehoffer/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getByGolfer",
+						"dinglehoffer",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Score",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/removeScore/00006309ac490000000000000002",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"removeScore",
+						"00006309ac490000000000000002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Remove",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/getByGolfer/dinglehoffer",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"getByGolfer",
+						"dinglehoffer"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
