@@ -64,21 +64,23 @@ const listAllScores = async () => {
 }
 
 // /list with limit
-app.get('/list/:limit', async (req, res) => {
-    const scores = await limitAllScores(req.params.limit)
+app.get('/list/:limit/:offset?', async (req, res) => {
+    const scores = await limitAllScores(req.params.limit, req.params.offset)
     let msg = {count: scores.length, scores: scores}
     res.send(msg)
 
 })
 
 // Showing find() with limit()
-const limitAllScores = async (limit) => {
+const limitAllScores = async (limit, offset) => {
+    if(!offset) offset = 0
     let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     await collection.find()
                     .limit(limit)
+                    .offset(offset)
                     .execute((score) => {
                         scores.push(score)
                     });
@@ -102,7 +104,13 @@ const getBestScores = async (limit) => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     await collection.find()
-                    .fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName'])
+                    .fields([
+                        'firstName',
+                        'lastName',
+                        'score',
+                        'date',
+                        'course.name as courseName']
+                    )
                     .sort(['score asc', 'date desc'])
                     .limit(limit)
                     .execute((score) => {
@@ -148,7 +156,11 @@ const getByScore = async (score) => {
     const collection = db.getCollection(collectionName)
     await collection.find("score = :score")
                     .bind('score', score)
-                    .fields(['concat(firstName, " ", lastName) as golfer', 'score', 'date', 'course.name as courseName'])
+                    .fields([
+                        'concat(firstName, " ", lastName) as golfer',
+                        'score', 'date',
+                        'course.name as courseName'
+                    ])
                     .sort(['date desc'])
                     .execute((score) => {
                         scores.push(score)
@@ -349,7 +361,10 @@ const addHoleScores = async (data) => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     try {
-        await collection.modify("_id = :id").set("holeSores", data.holeScores).bind("id", data._id).execute()
+        await collection.modify("_id = :id")
+            .set("holeSores", data.holeScores)
+            .bind("id", data._id)
+            .execute()
     }
     catch (e) {
         success = false
@@ -378,7 +393,9 @@ const removeScore = async (id) => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     try {
-        await collection.remove("_id = :id").bind("id", id).execute()
+        await collection.remove("_id = :id")
+            .bind("id", id)
+            .execute()
     }
     catch (e) {
         success = false
