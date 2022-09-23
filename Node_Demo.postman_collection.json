@@ -45,24 +45,17 @@
 			"name": "List All Limit 100",
 			"request": {
 				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "Best Scores",
-			"request": {
-				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3001/bestScores",
+					"raw": "http://localhost:3001/list/100",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "3001",
 					"path": [
-						"bestScores"
+						"list",
+						"100"
 					]
 				}
 			},
@@ -148,26 +141,6 @@
 			"response": []
 		},
 		{
-			"name": "Get Golfer Average",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3001/getAverageScorePerGolfer/2022",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3001",
-					"path": [
-						"getAverageScorePerGolfer",
-						"2022"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Get Course Data",
 			"request": {
 				"method": "GET",
@@ -181,25 +154,6 @@
 					"port": "3001",
 					"path": [
 						"getCourseScoringData"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Holes-In-One",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3001/getHolesInOne",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "3001",
-					"path": [
-						"getHolesInOne"
 					]
 				}
 			},
