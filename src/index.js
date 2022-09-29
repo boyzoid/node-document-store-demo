@@ -159,6 +159,7 @@ const getByScore = async (score) => {
                     .fields([
                         'concat(firstName, " ", lastName) as golfer',
                         'score', 'date',
+                        'course',
                         'course.name as courseName'
                     ])
                     .sort(['date desc'])
