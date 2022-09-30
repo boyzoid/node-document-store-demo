@@ -109,7 +109,7 @@ const getBestScores = async (limit) => {
                         'lastName',
                         'score',
                         'date',
-                        'course.name as courseName']
+                        'course']
                     )
                     .sort(['score asc', 'date desc'])
                     .limit(limit)
@@ -133,7 +133,11 @@ const getRoundsUnderPar = async () => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     await collection.find("score < course.par")
-                    .fields(['firstName', 'lastName', 'score', 'date', 'course.name as courseName'])
+                    .fields(['firstName',
+                    'lastName',
+                    'score',
+                    'date',
+                    'course.name as courseName'])
                     .execute((score) => {
                         scores.push(score)
                     })
