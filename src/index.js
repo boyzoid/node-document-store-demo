@@ -1,18 +1,17 @@
 // importing the dependencies
-const express = require('express')
-const bodyParser = require('body-parser')
-require('dotenv').config();
+import express from 'express'
+import * as dotenv from 'dotenv'
+dotenv.config()
+
+// DB Specific config
+import * as mysqlx from '@mysql/xdevapi';
+
 
 // defining the Express app
 const app = express()
 
 // using bodyParser to parse JSON bodies into JS objects
-app.use(bodyParser.json())
-
-const fs = require('fs')
-
-// DB Specific config
-const mysqlx = require('@mysql/xdevapi')
+app.use(express.json())
 
 // Database/Schema Name
 const databaseName = 'node_demo'
@@ -134,10 +133,10 @@ const getRoundsUnderPar = async () => {
     const collection = db.getCollection(collectionName)
     await collection.find("score < course.par")
                     .fields(['firstName',
-                    'lastName',
-                    'score',
-                    'date',
-                    'course.name as courseName'])
+                        'lastName',
+                        'score',
+                        'date',
+                        'course.name as courseName'])
                     .execute((score) => {
                         scores.push(score)
                     })
@@ -163,7 +162,6 @@ const getByScore = async (score) => {
                     .fields([
                         'concat(firstName, " ", lastName) as golfer',
                         'score', 'date',
-                        'course',
                         'course.name as courseName'
                     ])
                     .sort(['date desc'])
