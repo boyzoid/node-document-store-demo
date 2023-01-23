@@ -49,17 +49,14 @@ app.get('/list/', async (req, res) => {
 })
 // find() demo
 const listAllScores = async () => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find()
-                    .execute((score) => {
-                        scores.push(score)
-                    });
-
+    let results = await collection.find()
+                    .execute();
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 // /list with limit
@@ -73,19 +70,16 @@ app.get('/list/:limit/:offset?', async (req, res) => {
 // Showing find() with limit()
 const limitAllScores = async (limit, offset) => {
     if(!offset) offset = 0
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find()
+    let results = await collection.find()
                     .limit(limit)
                     .offset(offset)
-                    .execute((score) => {
-                        scores.push(score)
-                    });
-
+                    .execute()
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 // /bestScores endpoint
@@ -98,11 +92,10 @@ app.get('/bestScores/:limit?', async (req, res) => {
 
 // showing find() with fields() and sort()
 const getBestScores = async (limit) => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find()
+    let results = await collection.find()
                     .fields([
                         'firstName',
                         'lastName',
@@ -112,11 +105,10 @@ const getBestScores = async (limit) => {
                     )
                     .sort(['score asc', 'date desc'])
                     .limit(limit)
-                    .execute((score) => {
-                        scores.push(score)
-                    });
+                    .execute()
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 app.get('/getRoundsUnderPar', async (req, res) => {
@@ -127,21 +119,19 @@ app.get('/getRoundsUnderPar', async (req, res) => {
 
 // Showing find() with numeric comparison
 const getRoundsUnderPar = async () => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("score < course.par")
+    let results = await collection.find("score < course.par")
                     .fields(['firstName',
                         'lastName',
                         'score',
                         'date',
                         'course.name as courseName'])
-                    .execute((score) => {
-                        scores.push(score)
-                    })
+                    .execute()
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 app.get('/getByScore/:score?', async (req, res) => {
@@ -153,21 +143,19 @@ app.get('/getByScore/:score?', async (req, res) => {
 
 //show find() with bind()
 const getByScore = async (score) => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("score = :score")
-                    .bind('score', score)
+    let results = await collection.find("score = :scoreParam")
+                    .bind('scoreParam', score)
                     .fields([
                         'concat(firstName, " ", lastName) as golfer',
                         'score', 'date',
                         'course.name as courseName'
                     ])
                     .sort(['date desc'])
-                    .execute((score) => {
-                        scores.push(score)
-                    });
+                    .execute()
+    let scores = results.fetchAll()
     session.close()
     return scores
 }
@@ -181,18 +169,16 @@ app.get('/getByGolfer/:lastName?', async (req, res) => {
 
 // showing find() using 'like'
 const getByGolfer = async (lastName) => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find("lower(lastName) like :lastName")
-                    .bind('lastName', lastName.toLowerCase() + '%')
+    let results = await collection.find("lower(lastName) like :lastNameParam")
+                    .bind('lastNameParam', lastName.toLowerCase() + '%')
                     .sort(['lastName', 'firstName'])
-                    .execute((score) => {
-                        scores.push(score)
-                    });
+                    .execute();
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 app.get('/getAverageScorePerGolfer/:year?', async (req, res) => {
@@ -204,19 +190,17 @@ app.get('/getAverageScorePerGolfer/:year?', async (req, res) => {
 
 // show find() using logic for year, aggregate data in fields(), and groupBy()
 const getAverageScorePerGolfer = async (year) => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find(year ? "year(date) = " + year : 'date is not null')
+    let results = await collection.find(year ? "year(date) = " + year : 'date is not null')
                     .fields(['lastName', 'firstName', 'round(avg(score), 2) as avg', 'count(score) as numberOfRounds'])
                     .sort(['lastName', 'firstName'])
                     .groupBy(['lastName', 'firstName'])
-                    .execute((score) => {
-                        scores.push(score)
-                    })
+                    .execute()
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 app.get('/getCourseScoringData', async (req, res) => {
@@ -227,11 +211,10 @@ app.get('/getCourseScoringData', async (req, res) => {
 
 // show find with groupBy() on child property.
 const getCourseScoringData = async () => {
-    let scores = []
     const session = await pool.getSession()
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
-    await collection.find()
+    let results = await collection.find()
                     .fields([
                                 'course.name as courseName',
                                 'round(avg(score), 2)  as avg',
@@ -241,11 +224,10 @@ const getCourseScoringData = async () => {
                             ])
                     .groupBy(['course.name'])
                     .sort('course.name desc')
-                    .execute((score) => {
-                        scores.push(score)
-                    })
+                    .execute()
+    let data = results.fetchAll()
     session.close()
-    return scores
+    return data
 }
 
 app.get('/getHolesInOne', async (req, res) => {
@@ -256,7 +238,6 @@ app.get('/getHolesInOne', async (req, res) => {
 
 // use SQL with path operator, JSON_ARRAYAGG(), JSON_OBJECT(), and JSON_TABLE()
 const getHolesInOne = async () => {
-    let aces = []
     const session = await pool.getSession()
 
     const sql = `SELECT JSON_OBJECT(
@@ -285,11 +266,10 @@ const getHolesInOne = async () => {
                  ORDER by doc ->> '$.date' DESC`
 
     const query = await session.sql(sql)
-    await query.execute((ace) => {
-        aces.push(ace)
-    })
+    let results = await query.execute()
+    let data = results.fetchAll()
     session.close()
-    return aces
+    return data
 }
 
 app.get('/getAggregateCourseScore', async (req, res) => {
@@ -301,7 +281,6 @@ app.get('/getAggregateCourseScore', async (req, res) => {
 
 // Show SQL with using JSON data in a common table expression
 const getAggregateCourseScore = async () => {
-    let courses = []
     const session = await pool.getSession()
 
     const sql = `
@@ -322,11 +301,10 @@ const getAggregateCourseScore = async () => {
         ORDER BY course;`
 
     const query = await session.sql(sql)
-    await query.execute((course) => {
-        courses.push(course)
-    })
+    let results = await query.execute()
+    let data = results.fetchAll()
     session.close()
-    return courses
+    return data
 }
 
 app.post('/score', async function (req, res, response) {
@@ -364,9 +342,9 @@ const addHoleScores = async (data) => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     try {
-        await collection.modify("_id = :id")
+        await collection.modify("_id = :idParam")
             .set("holeSores", data.holeScores)
-            .bind("id", data._id)
+            .bind("idParam", data._id)
             .execute()
     }
     catch (e) {
@@ -396,8 +374,8 @@ const removeScore = async (id) => {
     const db = session.getSchema(databaseName)
     const collection = db.getCollection(collectionName)
     try {
-        await collection.remove("_id = :id")
-            .bind("id", id)
+        await collection.remove("_id = :idParam")
+            .bind("idParam", id)
             .execute()
     }
     catch (e) {
