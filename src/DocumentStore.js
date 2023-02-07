@@ -2,12 +2,16 @@ import * as mysqlx from '@mysql/xdevapi';
 import * as dotenv from 'dotenv'
 
 class DocumentStore {
+    #databaseName
+    #collectionName
+    #connectionUrl
+    #pool
     constructor() {
         dotenv.config()
-        this._databaseName = 'node_demo'
-        this._collectionName = 'scores'
-        this._connectionUrl = `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${this._databaseName}`
-        this._pool = mysqlx.getClient(this._connectionUrl, {
+        this.#databaseName = 'node_demo'
+        this.#collectionName = 'scores'
+        this.#connectionUrl = `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${this.#databaseName}`
+        this.#pool = mysqlx.getClient(this.#connectionUrl, {
             pooling: {
                 enabled: true,
                 maxSize: 10,
@@ -15,13 +19,12 @@ class DocumentStore {
                 queueTimeout: 5000
             }
         })
-        this._defaultResultLength = 50
     }
 
     async listAllScores() {
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find()
             .execute();
         let data = results.fetchAll()
@@ -30,9 +33,9 @@ class DocumentStore {
     }
     async limitAllScores (limit, offset) {
         if(!offset) offset = 0
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find()
             .limit(limit)
             .offset(offset)
@@ -42,9 +45,9 @@ class DocumentStore {
         return data
     }
     async getBestScores(limit){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find()
             .fields([
                 'firstName',
@@ -61,9 +64,9 @@ class DocumentStore {
         return data
     }
     async getRoundsUnderPar(){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find("score < course.par")
             .fields(['firstName',
                 'lastName',
@@ -76,9 +79,9 @@ class DocumentStore {
         return data
     }
     async getByScore(score){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find("score = :scoreParam")
             .bind('scoreParam', score)
             .fields([
@@ -93,9 +96,9 @@ class DocumentStore {
         return scores
     }
     async getByGolfer(lastName){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find("lower(lastName) like :lastNameParam")
             .bind('lastNameParam', lastName.toLowerCase() + '%')
             .sort(['lastName', 'firstName'])
@@ -105,9 +108,9 @@ class DocumentStore {
         return data
     }
     async getAverageScorePerGolfer(year){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find(year ? "year(date) = " + year : 'date is not null')
             .fields(['lastName', 'firstName', 'round(avg(score), 2) as avg', 'count(score) as numberOfRounds'])
             .sort(['lastName', 'firstName'])
@@ -118,9 +121,9 @@ class DocumentStore {
         return data
     }
     async getCourseScoringData(){
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         let results = await collection.find()
             .fields([
                 'course.name as courseName',
@@ -137,7 +140,7 @@ class DocumentStore {
         return data
     }
     async getHolesInOne(){
-        const session = await this._pool.getSession()
+        const session = await this.#pool.getSession()
 
         const sql = `SELECT JSON_OBJECT(
                                 'firstName', doc ->> '$.firstName',
@@ -171,7 +174,7 @@ class DocumentStore {
         return data
     }
     async getAggregateCourseScore(){
-        const session = await this._pool.getSession()
+        const session = await this.#pool.getSession()
 
         const sql = `
         WITH aggScores AS
@@ -198,9 +201,9 @@ class DocumentStore {
     }
     async addScore(score){
         let success = true;
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         try {
             await collection.add(score).execute()
         }
@@ -212,9 +215,9 @@ class DocumentStore {
     }
     async addHoleScores(data){
         let success = true;
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         try {
             await collection.modify("_id = :idParam")
                 .set("holeSores", data.holeScores)
@@ -229,9 +232,9 @@ class DocumentStore {
     }
     async removeScore(id){
         let success = true;
-        const session = await this._pool.getSession()
-        const db = session.getSchema(this._databaseName)
-        const collection = db.getCollection(this._collectionName)
+        const session = await this.#pool.getSession()
+        const db = session.getSchema(this.#databaseName)
+        const collection = db.getCollection(this.#collectionName)
         try {
             await collection.remove("_id = :idParam")
                 .bind("idParam", id)

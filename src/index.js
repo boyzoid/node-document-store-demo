@@ -43,7 +43,7 @@ app.get('/list/:limit/:offset?', async (req, res) => {
 
 // /bestScores endpoint
 app.get('/bestScores/:limit?', async (req, res) => {
-    let limit = req.params.limit ? req.params.limit : defaultResultLength
+    let limit = req.params.limit ? req.params.limit : 50
     const scores = await docStore.getBestScores(limit)
     let msg = {count: scores.length, scores: scores}
     res.send(msg)
