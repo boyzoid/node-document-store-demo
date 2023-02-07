@@ -1,4 +1,4 @@
-import * as mysqlx from '@mysql/xdevapi';
+import * as mysqlx from '@mysql/xdevapi'
 
 class DocumentStore {
     #databaseName
@@ -8,7 +8,8 @@ class DocumentStore {
     constructor(dbUser, dbPassword, dbHost, dbPort, dbName, collectionName) {
         this.#databaseName = dbName
         this.#collectionName = collectionName
-        this.#connectionUrl = `mysqlx://${dbUser}:${dbPassword}@${dbHost}:${dbPort}}/${dbName}`
+        this.#connectionUrl =
+            `mysqlx://${dbUser}:${dbPassword}@${dbHost}:${dbPort}}/${dbName}`
         this.#pool = mysqlx.getClient(this.#connectionUrl, {
             pooling: {
                 enabled: true,

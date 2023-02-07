@@ -5,12 +5,14 @@ dotenv.config()
 
 // Document Store Service
 import DocumentStore from "./DocumentStore.js";
-const docStore = new DocumentStore(process.env.DB_USER,
-                                    process.env.DB_PASSWORD,
-                                    process.env.DB_HOST,
-                                    process.env.DB_PORT,
-                            'node_demo',
-                        'scores');
+const docStore = new DocumentStore(
+            process.env.DB_USER,
+            process.env.DB_PASSWORD,
+            process.env.DB_HOST,
+            process.env.DB_PORT,
+            process.env.DB_NAME,
+            process.env.COLLECTION_NAME
+);
 
 
 // defining the Express app
@@ -35,7 +37,6 @@ app.get('/list/', async (req, res) => {
     const scores = await docStore.listAllScores()
     let msg = {count: scores.length, scores: scores}
     res.send(msg)
-
 })
 
 // /list with limit
@@ -43,7 +44,6 @@ app.get('/list/:limit/:offset?', async (req, res) => {
     const scores = await docStore.limitAllScores(req.params.limit, req.params.offset)
     let msg = {count: scores.length, scores: scores}
     res.send(msg)
-
 })
 
 // /bestScores endpoint
