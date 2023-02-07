@@ -1,16 +1,14 @@
 import * as mysqlx from '@mysql/xdevapi';
-import * as dotenv from 'dotenv'
 
 class DocumentStore {
     #databaseName
     #collectionName
     #connectionUrl
     #pool
-    constructor() {
-        dotenv.config()
-        this.#databaseName = 'node_demo'
-        this.#collectionName = 'scores'
-        this.#connectionUrl = `mysqlx://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${this.#databaseName}`
+    constructor(dbUser, dbPassword, dbHost, dbPort, dbName, collectionName) {
+        this.#databaseName = dbName
+        this.#collectionName = collectionName
+        this.#connectionUrl = `mysqlx://${dbUser}:${dbPassword}@${dbHost}:${dbPort}}/${dbName}`
         this.#pool = mysqlx.getClient(this.#connectionUrl, {
             pooling: {
                 enabled: true,
