@@ -97,20 +97,19 @@ app.get('/getAggregateCourseScore', async (req, res) => {
     const courses = await docStore.getAggregateCourseScore()
     let msg = {courses: courses}
     res.send(msg)
-
 })
 
 app.post('/score', async function (req, res, response) {
     const success = await docStore.addScore(req.body);
     let msg = {success: success}
     res.send(msg)
-});
+})
 
 app.post('/holeScores', async function (req, res, response) {
     const success = await docStore.addHoleScores(req.body);
     let msg = {success: success}
     res.send(msg)
-});
+})
 
 app.get('/removeScore/:id?', async function (req, res, response) {
     let msg = {}
@@ -122,4 +121,4 @@ app.get('/removeScore/:id?', async function (req, res, response) {
         msg.error = "Please provide a valid id."
     }
     res.send(msg)
-});
+})
